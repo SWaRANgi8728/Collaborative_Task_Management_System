@@ -1,27 +1,3 @@
-// server.js
-/*const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const taskRoutes = require('./routes/taskRoutes');
-
-const app = express();
-const port = 3000;
-
-mongoose.connect('mongodb://localhost:27017/ctms', { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
-  .catch((error) => console.error('MongoDB connection error:', error));
-
-app.use(cors());
-app.use(bodyParser.json());
-
-app.use('/api/tasks', taskRoutes);
-
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});*/
-
-
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
