@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Management</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .container {
+    margin-top: 50px;
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="text-center">Project Management</h2>
+    
+    <!-- Create Project Form -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5>Create New Project</h5>
+        <form id="createProjectForm">
+          <div class="form-group">
+            <label for="name" class="required">Project Name</label>
+            <input type="text" class="form-control" id="name" placeholder="Enter project name" required>
+          </div>
+          <div class="form-group">
+            <label for="description" class="required">Description</label>
+            <textarea class="form-control" id="description" placeholder="Enter project description" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="members" class="required">Members (comma separated IDs)</label>
+            <input type="text" class="form-control" id="members" placeholder="Enter member IDs" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Create Project</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- All Projects List -->
+    <div class="card">
+      <div class="card-body">
+        <h5>All Projects</h5>
+        <ul id="projectList" class="list-group">
+          <!-- Project items will be dynamically inserted here -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Function to fetch and display all projects
+    function loadProjects() {
+      fetch('http://localhost:3000/api/projects') // Update here
+        .then(response => response.json())
+        .then(projects => {
+          const projectList = document.getElementById('projectList');
+          projectList.innerHTML = ''; // Clear the existing list
+          projects.forEach(project => {
+            const projectItem = document.createElement('li');
+            projectItem.classList.add('list-group-item');
+
+            // Check if there are members and render their name and email
+        const membersList = project.members
+          .map(member => `${member.name} (${member.email})`)  // Create a string for each member
+          .join(', ');  
+
+            projectItem.innerHTML = ` 
+              <strong>${project.name}</strong><br>
+              ${project.description}<br>
+              Members: ${project.members.join(', ')}
+            `;
+            projectList.appendChild(projectItem);
+          });
+        })
+        .catch(error => {
+          console.error("Error loading projects:", error);
+        });
+    }
+    
+    
+
+  // Handle project creation
+  document.getElementById('createProjectForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value.trim(); 
+  const description = document.getElementById('description').value.trim(); 
+  const members = document.getElementById('members').value.split(',').map(id => id.trim()); 
+
+  // Ensure that members array is not empty
+  if (members.length === 0) {
+    alert("Please provide at least one member ID.");
+    return;
+  }
+
+  const projectData = { name, description, members };
+
+  console.log("Project data:", projectData); 
+
+  fetch('http://localhost:3000/api/projects/create', { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(projectData)
+    })
+    .then(response => {
+      // Check if the response is OK
+      if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+      return response.json(); // Parse the response as JSON
+    })
+    .then(data => {
+      console.log("Project created successfully", data);
+      loadProjects(); // Reload the projects list after creating a new project
+    })
+    .catch(error => {
+      console.error("Error creating project:", error);
+      alert('Error creating project: ' + error.message);
+    });
+});
+
+
+  </script>
+</body>
+</html>

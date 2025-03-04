@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Task Management</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .required::after {
+      content: " *"; /* Asterisk after the label */
+      color: red; /* Color of the asterisk */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row justify-content-center" style="margin-top: 100px;">
+      <div class="col-md-6">
+        <!-- Card to hold the form -->
+        <div class="card shadow-lg">
+          <div class="card-body">
+            <h2 class="text-center">Login</h2>
+            <form id="loginForm">
+              <div class="form-group">
+                <label for="email" class="required">Email-ID</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter email" required>
+              </div>
+              <div class="form-group">
+                <label for="password" class="required">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter password" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Login</button>
+            </form>
+            <!-- Registration link centered below the form -->
+            <div class="text-center mt-3">
+              <label>New User?... <a href="register.html">Register</a></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    // Handle form submission
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      
+    // Send login data to the backend
+    fetch('http://localhost:3000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert('Invalid email or password');
+        } else {
+          alert('Login successful!');
+          window.location.href = "dashboard.html";  // Redirect to dashboard page
+        }
+      })
+      .catch(error => {
+        alert('Error: ' + error);
+      });
+    });
+  </script>
+</body>
+</html>

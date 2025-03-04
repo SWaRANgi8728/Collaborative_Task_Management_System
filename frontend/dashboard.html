@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Task Management</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    /* General Styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f7fc;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 100%;
+      background-color: #343a40;
+      padding-top: 30px;
+      padding-left: 20px;
+      color: #fff;
+    }
+
+    .sidebar a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+      display: block;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover {
+      background-color: #007bff;
+    }
+
+    .main-content {
+      margin-left: 270px;
+      padding: 30px;
+    }
+
+    .card-header {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    .modal-content {
+      border-radius: 8px;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      border: none;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      border: none;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      border: none;
+    }
+
+    .btn-warning {
+      background-color: #ffc107;
+      border: none;
+    }
+
+    table th, table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    h2 {
+      color: black;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 767px) {
+      .sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3 class="text-center text-white">Dashboard</h3>
+    <a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <a href="#createTask" data-toggle="modal" data-target="#createTaskModal"><i class="fas fa-plus-circle"></i> Create Task</a>
+    <a href="projectManagement.html"><i class="fas fa-tasks"></i> Manage Projects</a>
+    <a href="register.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h2 class="text-center">Task Dashboard</h2>
+
+    <!-- Tasks List -->
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <h4>Tasks</h4>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Assigned To</th>
+              <th>Reporter</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="taskList">
+            <!-- Task rows will be populated here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for creating a new task -->
+  <div class="modal" id="createTaskModal" tabindex="-1" role="dialog" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="createTaskForm">
+            <div class="form-group">
+              <label for="title">Title</label>
+              <input type="text" class="form-control" id="title" required>
+            </div>
+            <div class="form-group">
+              <label for="dueDate">Due Date</label>
+              <input type="date" class="form-control" id="dueDate" required>
+            </div>
+            <div class="form-group">
+              <label for="priority">Priority</label>
+              <select class="form-control" id="priority" required>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="assignee">Assigned To</label>
+              <input type="text" class="form-control" id="assignee" required>
+            </div>
+            <div class="form-group">
+              <label for="reporter">Reporter</label>
+              <input type="text" class="form-control" id="reporter" required>
+            </div>
+            <div class="form-group">
+              <label for="status">Status</label>
+              <select class="form-control" id="status" required>
+                <option value="To-Do">To-Do</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+            <button type="submit" id="submitButton" class="btn btn-primary">Create Task</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    const apiUrl = 'http://localhost:3000/api/tasks';
+
+    // Create task function
+    document.getElementById("createTaskForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById("title").value;
+      const dueDate = document.getElementById("dueDate").value;
+      const priority = document.getElementById("priority").value;
+      const assignee = document.getElementById("assignee").value;
+      const reporter = document.getElementById("reporter").value;
+      const status = document.getElementById("status").value;
+
+      const taskData = { title, dueDate, priority, assignee, reporter, status };
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskData),
+      });
+
+      if (response.ok) {
+        $('#createTaskModal').modal('hide'); // Close modal
+        fetchTasks(); // Refresh task list
+      }
+    });
+
+    // Fetch and display tasks
+    const fetchTasks = async () => {
+      const response = await fetch(apiUrl);
+      const tasks = await response.json();
+      const taskList = document.getElementById("taskList");
+      taskList.innerHTML = ''; // Clear existing tasks
+
+      tasks.forEach(task => {
+        const taskHTML = `
+          <tr>
+            <td>${task.title}</td>
+            <td>${new Date(task.dueDate).toLocaleDateString()}</td>
+            <td>${task.status}</td>
+            <td>${task.priority}</td>
+            <td>${task.assignee}</td>
+            <td>${task.reporter}</td>
+            <td>
+              <button class="btn btn-warning" onclick="editTask('${task._id}')"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-danger" onclick="deleteTask('${task._id}')"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+        taskList.innerHTML += taskHTML;
+      });
+    };
+
+    // Edit task function
+    const editTask = (id) => {
+      // Fetch the task data by ID
+      fetch(`${apiUrl}/${id}`)
+        .then(response => response.json())
+        .then(task => {
+          // Pre-fill the modal form with task data
+          document.getElementById("title").value = task.title;
+          document.getElementById("dueDate").value = task.dueDate.split('T')[0]; // Format Date to yyyy-mm-dd
+          document.getElementById("priority").value = task.priority;
+          document.getElementById("assignee").value = task.assignee;
+          document.getElementById("reporter").value = task.reporter;
+          document.getElementById("status").value = task.status;
+
+          // Change modal button text to "Update Task"
+          const submitButton = document.getElementById('submitButton');
+          submitButton.textContent = 'Update Task'; // Change button text
+          submitButton.onclick = (event) => updateTask(event, id); // Update task with task id
+        })
+        .catch(error => {
+          console.error("Error fetching task:", error);
+        });
+
+      // Ensure the modal is displayed
+      $('#createTaskModal').modal('show');
+    };
+
+    // Update task function
+    const updateTask = async (event, id) => {
+      event.preventDefault(); // Prevent form default behavior
+
+      const title = document.getElementById("title").value;
+      const dueDate = document.getElementById("dueDate").value;
+      const priority = document.getElementById("priority").value;
+      const assignee = document.getElementById("assignee").value;
+      const reporter = document.getElementById("reporter").value;
+      const status = document.getElementById("status").value;
+
+      const updatedTask = { title, dueDate, priority, assignee, reporter, status };
+
+      // Send PUT request to update the task
+      const response = await fetch(`${apiUrl}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTask),
+      });
+
+      if (response.ok) {
+        $('#createTaskModal').modal('hide'); // Close modal
+        fetchTasks(); // Refresh task list after update
+      } else {
+        console.error("Failed to update task");
+      }
+    };
+
+    // Delete task function
+    const deleteTask = async (id) => {
+      const response = await fetch(`${apiUrl}/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        fetchTasks(); // Refresh task list
+      }
+    };
+
+    // Initial call to fetch tasks
+    fetchTasks();
+  </script>
+</body>
+</html>
